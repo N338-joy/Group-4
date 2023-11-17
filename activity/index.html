@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Jost:wght@500&family=Julius+Sans+One&family=Paytone+One&family=Playfair+Display:wght@600&family=Questrial&family=Roboto:wght@400;500;700;900&display=swap"
+      rel="stylesheet" />
+    <link rel="stylesheet" href="batman.css" />
+    <title>MangaDex | Group 4</title>
+    <style>img {
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 5px;
+      width: 200px;
+   }</style>
+    
+  </head>
+  <body>
+    <div class="head">
+      <h1>GET MANGA !</h1>
+
+      <div class="form">
+        <label for="offset">Offset</label>
+        <input placeholder="Enter Offset" id="offset" type="number" />
+        <label for="limit">limit</label>
+        <input placeholder="Enter Limit" id="limit" type="number" />
+        <button id="get-data">Get Manga</button>
+      </div>
+    </div>
+
+    <div id="infocontainer" class="info-css"></div>
+    <script>
+      document
+        .getElementById("get-data")
+        .addEventListener("click", function () {
+          const offset = document.getElementById("offset").value;
+          const limit = document.getElementById("limit").value;
+
+          var xml = new XMLHttpRequest();
+          xml.onreadystatechange = function () {
+            if (this.readyState === 4 && this.status === 200) {
+              const response = JSON.parse(this.responseText);
+              let infocontainer = document.getElementById("infocontainer");
+              infocontainer.innerHTML = "";
+
+              response.data.forEach((manga) => {
+                let mangaInfo = document.createElement("div");
+                mangaInfo.classList.add("preview");
+
+                let title = document.createElement("p");
+                title.textContent = ` ${manga.attributes.title.en}`;
+
+                let image = document.createElement('img');
+                let mId = manga.id;
+                let array = manga.relationships.find(function(item){
+                    return item.type === "cover_art";
+                })
+                console.log(array.attributes.fileName);
+                let fName = array.attributes.fileName;
+                image.id="mangaImage"
+                image.src = `https://uploads.mangadex.org/covers/${mId}/${fName}`;
+                infocontainer.appendChild(image);
+                
+                //let image = document.createElement("img");
+                //image.src = manga.attributes.coverArt;
+                //image.alt = `Cover for ${manga.attributes.title.en}`;
+
+                let description = document.createElement("p");
+                description.textContent = ` ${manga.attributes.description.en}`;
+
+                mangaInfo.appendChild(title);
+                mangaInfo.appendChild(image);
+                mangaInfo.appendChild(description);
+
+                infocontainer.appendChild(mangaInfo);
+              });
+            }
+          };
+
+          xml.open(
+            "GET",
+            `https://api.mangadex.org/manga?limit=${limit}&offset=${offset}&includes%5B%5D=cover_art`
+          );
+          xml.send();
+        });
+    </script>
+  </body>
+</html>
